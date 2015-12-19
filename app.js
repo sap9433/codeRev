@@ -56,9 +56,13 @@ var handleLeaderBoardLogic = function(req) {
   req.on('data', function(chunk) {
     console.log("Received body data:");
     var resonse = JSON.parse(chunk.toString());
-    leaderBoardDb['prs'][resonse.pull_request.id] = resonse.pull_request.html_url;
-    io.sockets.emit('updateUsers', {
-      res: leaderBoardDb
-    });
+    if (resonse.pull_request == null) {
+      return;
+    } else {
+      leaderBoardDb['prs'][resonse.pull_request.id] = resonse.pull_request.html_url;
+      io.sockets.emit('updatePrs', {
+        res: leaderBoardDb
+      });
+    }
   });
 }

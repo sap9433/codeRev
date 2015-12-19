@@ -12,7 +12,7 @@
   leaderBoard.controller('appCtrl', function($scope) {
     $scope.dataBase = {'key': 'pair'};
     (function() {
-      socket.on('updateUsers', function(data) {
+      socket.on('updatePrs', function(data) {
         $scope.dataBase = data.res.prs;
         $scope.$apply();
       });
@@ -27,7 +27,7 @@
   Leader Board
   <div id="board">
     <div ng-repeat="(rowkey, rowVal) in dataBase">
-      <span>{{rowkey}}</span> <span><a>{{rowVal}}</a></span>
+      <span>{{rowkey}}</span> <span><a href="rowVal">{{rowVal}}</a></span>
     </div>
   </div>
 </body>
