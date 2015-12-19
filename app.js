@@ -57,12 +57,16 @@ var handleLeaderBoardLogic = function(req) {
         reviewedBy: []
       }
     } else if ((thisCom = load.comment)) {
-      var reviewDone = thisCom.body == 'lgtm' && thisCom.action == 'created';
+      var reviewDone = thisCom.body == 'lgtm' && load.action == 'created';
       if (reviewDone) {
         var reviewer = thisCom.user.login;
         var refPull = load.issue.pull_request.html_url;
         leaderBoardDb.prs[refPull].reviewedBy.push(reviewer);
-        leaderBoardDb.users[reviewer].push(refPull);
+        if (!leaderBoardDb.users[reviewer]) {
+          leaderBoardDb.users[reviewer] = [refPull];
+        } else {
+          leaderBoardDb.users[reviewer].push(refPull);
+        }
       }
     }
   });
