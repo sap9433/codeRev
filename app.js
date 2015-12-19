@@ -5,13 +5,8 @@ var fs = require('fs');
 app.listen(9998);
 
 var leaderBoardDb = {
-  'prs': {
-
-  },
-  'users': {
-
-  }
-
+  'prs': {},
+  'users': {}
 };
 
 function handler(req, res) {
@@ -27,9 +22,6 @@ function handler(req, res) {
   // Change this in gitHub hook as you change wifi/network.
   if (req.url == '/payload') {
     handleLeaderBoardLogic(req);
-    // res.writeHead(200);
-    // res.end();
-    // return;
   }
 
   fs.readFile(pageUrl,
@@ -56,12 +48,22 @@ io.on('connection', function(socket) {
 
 var handleLeaderBoardLogic = function(req) {
   req.on('data', function(chunk) {
-    console.log("Received body data:");
     var resonse = JSON.parse(chunk.toString());
-    if (resonse.pull_request == null) {
-      return;
-    } else {
-      leaderBoardDb['prs'][resonse.pull_request.id] = resonse.pull_request.html_url;
+    if ((thisPr = resonse.pull_request) && thisPr.action == "opened") {
+      leaderBoardDb['prs'][thisPr.html_url] = {
+        title: thisPr.title,
+        openedBy: thisPr.user.login,
+        created: thisPr.created_at,
+        reviewedBy: []
+      }
+    } else if ((thisCom = resonse.comment)) {
+      var reviewDone = thisCom.body == 'lgtm' && thisCom.action == 'created';
+      if(reviewDone){
+        var reviewer = thisCom.user.login;
+        var refPull = resonse.issue.pull_request.html_url;
+        leaderBoardDb.prs[refPull].reviewedBy.push(reviewer);
+        leaderBoardDb.users[reviewer].push(refPull);
+      }
     }
   });
 }
