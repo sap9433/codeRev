@@ -1,4 +1,2 @@
 # codeRev
-Gameify code review
-
-test
+Gameify code review.

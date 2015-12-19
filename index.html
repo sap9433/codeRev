@@ -1,18 +1,35 @@
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<script>
-  var socket = io();
-  
-  socket.on('updateUsers', function (data) {
-    $('#board').html(data && data.res && data.res.toString());
+<!DOCTYPE html>
+<html ng-app="leaderBoardApp">
+
+<head>
+  <title>Leader Board</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script>
+  var leaderBoard = angular.module('leaderBoardApp', []);
+
+  leaderBoard.controller('appCtrl', function($scope) {
+    $scope.dataBase = {'key': 'pair'};
+    (function() {
+      socket.on('updateUsers', function(data) {
+        $scope.dataBase = data.res.prs;
+        $scope.$apply();
+      });
+    })();
   });
 
-</script>
+  var socket = io();
+  </script>
+</head>
 
-<body>
-hi
-<div id="board">
-  
-</div>
-
+<body ng-controller="appCtrl">
+  Leader Board
+  <div id="board">
+    <div ng-repeat="(rowkey, rowVal) in dataBase">
+      <span>{{rowkey}}</span> <span><a>{{rowVal}}</a></span>
+    </div>
+  </div>
 </body>
+
+</html>
