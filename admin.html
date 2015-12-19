@@ -1,0 +1,16 @@
+<script src="/socket.io/socket.io.js"></script>
+<script>
+var socket = io();
+
+
+socket.emit('githubChanged', {
+  delta: new Date()
+});
+
+</script>
+
+<body>
+  <div>
+  	yo
+  </div>
+</body>

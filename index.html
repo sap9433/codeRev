@@ -1,0 +1,18 @@
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>
+  var socket = io();
+  
+  socket.on('updateUsers', function (data) {
+    $('#board').html(data && data.res && data.res.toString());
+  });
+
+</script>
+
+<body>
+hi
+<div id="board">
+  
+</div>
+
+</body>
