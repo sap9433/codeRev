@@ -4,29 +4,61 @@ var fs = require('fs');
 
 app.listen(9998);
 
-function handler (req, res) {
+var leaderBoardDb = {
+  'prs': {
+
+  },
+  'users': {
+
+  }
+
+};
+
+function handler(req, res) {
   console.log(req.url);
 
   var pageUrl = __dirname + '/index.html';
 
-  if(req.url == '/admin') {
+  if (req.url == '/admin') {
     pageUrl = __dirname + '/admin.html';
   }
 
-  fs.readFile(pageUrl,
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-
+  // Git hub payload received . Sent on http://7b0160d4.ngrok.io -> localhost:9998
+  // Change this in gitHub hook as you change wifi/network.
+  if (req.url == '/payload') {
+    handleLeaderBoardLogic(req);
     res.writeHead(200);
-    res.end(data);
-  });
+    res.end();
+    return;
+  }
+
+  fs.readFile(pageUrl,
+    function(err, data) {
+      if (err) {
+        res.writeHead(500);
+        return res.end('Error loading index.html');
+      }
+
+      res.writeHead(200);
+      res.end(data);
+    });
 }
 
-io.on('connection', function (socket) {
-  socket.on('githubChanged', function (data) {
-    io.sockets.emit('updateUsers', { res: data.delta });
+io.on('connection', function(socket) {
+  socket.on('githubChanged', function(data) {
+    io.sockets.emit('updateUsers', {
+      res: data.delta
+    });
   });
 });
+
+var handleLeaderBoardLogic = function(req) {
+  req.on('data', function(chunk) {
+    console.log("Received body data:");
+    var resonse = JSON.parse(chunk.toString());
+    leaderBoardDb['prs'][resonse.pull_request.id] = resonse.pull_request.html_url;
+    io.sockets.emit('updateUsers', {
+      res: leaderBoardDb
+    });
+  });
+}
