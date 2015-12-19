@@ -48,19 +48,19 @@ io.on('connection', function(socket) {
 
 var handleLeaderBoardLogic = function(req) {
   req.on('data', function(chunk) {
-    var resonse = JSON.parse(chunk.toString());
-    if ((thisPr = resonse.pull_request) && thisPr.action == "opened") {
+    var load = JSON.parse(chunk.toString());
+    if ((thisPr = load.pull_request) && load.action == 'opened') {
       leaderBoardDb['prs'][thisPr.html_url] = {
         title: thisPr.title,
         openedBy: thisPr.user.login,
         created: thisPr.created_at,
         reviewedBy: []
       }
-    } else if ((thisCom = resonse.comment)) {
+    } else if ((thisCom = load.comment)) {
       var reviewDone = thisCom.body == 'lgtm' && thisCom.action == 'created';
-      if(reviewDone){
+      if (reviewDone) {
         var reviewer = thisCom.user.login;
-        var refPull = resonse.issue.pull_request.html_url;
+        var refPull = load.issue.pull_request.html_url;
         leaderBoardDb.prs[refPull].reviewedBy.push(reviewer);
         leaderBoardDb.users[reviewer].push(refPull);
       }
