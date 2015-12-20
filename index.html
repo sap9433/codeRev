@@ -5,6 +5,23 @@
   <title>Leader Board</title>
   <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css">
   <style type="text/css">
+  .crown {
+    width: 58px;
+    height: 42px;
+    position: absolute;
+    margin-top: 5px;
+    margin-left: 175px;
+  }
+  
+  a {
+    text-decoration: none;
+  }
+  
+  .color {
+    color: #3B73B3;
+    /*text-align: center;*/
+  }
+  
   .eachPr {
     padding: 10px;
     border-bottom: 1px solid #DEDDDD;
@@ -46,21 +63,28 @@
 </head>
 
 <body ng-controller="appCtrl">
+  <h3 class="color">Code Review Leader Board </h3>
   <div class="row">
     <div class="seven columns">
+      <h5 class="color">Pull Requests</h5>
       <div id="reviews">
         <div ng-repeat="(rowkey, rowVal) in dataBase.prs" class="eachPr">
           Pull request <a href="{{rowkey}}">{{rowVal.title}}</a> is been submitted by {{rowVal.openedBy}} at {{rowVal.created | date:'medium'}}
           <div>
-            Reviewed by: <span ng-repeat="name in dataBase.reviewedBy">{{name}} ,</span>
+            <span class="color">Reviewed by: </span>
+            <span ng-repeat="name in rowVal.reviewedBy track by $index">
+              &nbsp;{{name}} .
+            </span>
           </div>
         </div>
       </div>
     </div>
     <div class="four columns">
+      <h5 class="color">Leader Board</h5>
       <div id="board">
-        <div ng-repeat="(rowkey, rowVal) in dataBase.users | orderObjectBy:'score':true">
-          <span>{{rowVal.name}}</span> <span><a href="rowVal">{{rowVal.score}}</a></span>
+        <div ng-repeat="(rowkey, rowVal) in dataBase.users | orderObjectBy:'score':true" class="eachPr">
+          <div>User: {{rowVal.name}} <img class="crown" src="http://images.clipartpanda.com/hot-pink-crown-clip-art-MiLLoA6MT.svg" ng-if="$index === 0"></div>
+          <div class="color">Score: {{rowVal.score}}</div>
         </div>
       </div>
     </div>

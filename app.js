@@ -63,7 +63,7 @@ var handleLeaderBoardLogic = function(req) {
         created: thisPr.created_at,
         reviewedBy: []
       };
-      console.log(exec);
+      console.log('Yahoo');
       exec('curl --header "Authorization: key=AIzaSyBBh4ddPa96rQQNxqiq_qQj7sq1JdsNQUQ" --header Content-Type:"application/json" https://android.googleapis.com/gcm/send -d "{\"registration_ids\":[\"e93gZ-qIviM:APA91bGFq1b0PBtYG7YvwFa2sA74IJZOSeHCXg_BZE-iWYL1rfZjGXbcqmWw3aL0eGZyfk7dhY9MnULjncR_ragGnozCeZ71nBl_pCc6cw4BY6xVTd8noeM0kfZW-ckY4vcDrsJdJLre\"]}"');
     } else if ((thisCom = load.comment)) {
       var reviewDone = thisCom.body == 'lgtm' && load.action == 'created';
