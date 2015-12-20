@@ -9,6 +9,7 @@
   "author": "Sapy",
   "license": "ISC",
   "dependencies": {
+    "pusher": "^1.0.6",
     "socket.io": "^1.3.7"
   }
 }

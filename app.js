@@ -1,6 +1,8 @@
 var app = require('http').createServer(handler)
 var io = require('socket.io')(app);
 var fs = require('fs');
+var Pusher = require('pusher');
+
 
 app.listen(9998);
 
@@ -55,7 +57,20 @@ var handleLeaderBoardLogic = function(req) {
         openedBy: thisPr.user.login,
         created: thisPr.created_at,
         reviewedBy: []
-      }
+      };
+      
+      var pusher = new Pusher({
+        appId: '162038',
+        key: '0b4bf9e74a4c99c2f54f',
+        secret: 'eb085aac373d29a610b3',
+        encrypted: true
+      });
+      pusher.port = 443;
+      console.log('tahh');
+      pusher.trigger('test_channel', 'my_event', {
+        "message": "hello world"
+      });
+
     } else if ((thisCom = load.comment)) {
       var reviewDone = thisCom.body == 'lgtm' && load.action == 'created';
       if (reviewDone) {

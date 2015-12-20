@@ -6,6 +6,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://js.pusher.com/3.0/pusher.min.js"></script>
   <script>
   var leaderBoard = angular.module('leaderBoardApp', []);
 
@@ -19,6 +20,15 @@
   });
 
   var socket = io();
+  </script>
+  <script>
+    var pusher = new Pusher('0b4bf9e74a4c99c2f54f', {
+      encrypted: true
+    });
+    var channel = pusher.subscribe('test_channel');
+    channel.bind('my_event', function(data) {
+      alert(data.message);
+    });
   </script>
 </head>
 
