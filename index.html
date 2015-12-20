@@ -3,6 +3,35 @@
 
 <head>
   <title>Leader Board</title>
+  <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css">
+  <style type="text/css">
+  .crown {
+    width: 58px;
+    height: 42px;
+    position: absolute;
+    margin-top: 5px;
+    margin-left: 175px;
+  }
+  
+  a {
+    text-decoration: none;
+  }
+  
+  .color {
+    color: #3B73B3;
+    /*text-align: center;*/
+  }
+  
+  .eachPr {
+    padding: 10px;
+    border-bottom: 1px solid #DEDDDD;
+  }
+  
+  #reviews {
+    height: 658px;
+    border-right: 1px solid #DEDDDD;
+  }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -10,24 +39,54 @@
   var leaderBoard = angular.module('leaderBoardApp', []);
 
   leaderBoard.controller('appCtrl', function($scope) {
-    $scope.dataBase = {'key': 'pair'};
     (function() {
       socket.on('updatePrs', function(data) {
-        $scope.dataBase = data.res.prs;
+        $scope.dataBase = data.res;
         $scope.$apply();
       });
     })();
+  }).filter('orderObjectBy', function() {
+    return function(items, field, reverse) {
+      var filtered = [];
+      angular.forEach(items, function(item) {
+        filtered.push(item);
+      });
+      filtered.sort(function(a, b) {
+        return (a[field] > b[field] ? 1 : -1);
+      });
+      if (reverse) filtered.reverse();
+      return filtered;
+    };
   });
-
   var socket = io();
   </script>
 </head>
 
 <body ng-controller="appCtrl">
-  Leader Board
-  <div id="board">
-    <div ng-repeat="(rowkey, rowVal) in dataBase">
-      <span>{{rowkey}}</span> <span><a href="rowVal">{{rowVal}}</a></span>
+  <h3 class="color">Code Review Leader Board </h3>
+  <div class="row">
+    <div class="seven columns">
+      <h5 class="color">Pull Requests</h5>
+      <div id="reviews">
+        <div ng-repeat="(rowkey, rowVal) in dataBase.prs" class="eachPr">
+          Pull request <a href="{{rowkey}}">{{rowVal.title}}</a> is been submitted by {{rowVal.openedBy}} at {{rowVal.created | date:'medium'}}
+          <div>
+            <span class="color">Reviewed by: </span>
+            <span ng-repeat="name in rowVal.reviewedBy track by $index">
+              &nbsp;{{name}} .
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="four columns">
+      <h5 class="color">Leader Board</h5>
+      <div id="board">
+        <div ng-repeat="(rowkey, rowVal) in dataBase.users | orderObjectBy:'score':true" class="eachPr">
+          <div>User: {{rowVal.name}} <img class="crown" src="http://images.clipartpanda.com/hot-pink-crown-clip-art-MiLLoA6MT.svg" ng-if="$index === 0"></div>
+          <div class="color">Score: {{rowVal.score}}</div>
+        </div>
+      </div>
     </div>
   </div>
 </body>

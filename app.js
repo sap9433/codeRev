@@ -1,17 +1,14 @@
 var app = require('http').createServer(handler)
 var io = require('socket.io')(app);
 var fs = require('fs');
+var exec = require('child_process').exec;
+
 
 app.listen(9998);
 
 var leaderBoardDb = {
-  'prs': {
-
-  },
-  'users': {
-
-  }
-
+  'prs': {},
+  'users': {}
 };
 
 function handler(req, res) {
@@ -27,9 +24,6 @@ function handler(req, res) {
   // Change this in gitHub hook as you change wifi/network.
   if (req.url == '/payload') {
     handleLeaderBoardLogic(req);
-    // res.writeHead(200);
-    // res.end();
-    // return;
   }
 
   fs.readFile(pageUrl,
@@ -56,12 +50,36 @@ io.on('connection', function(socket) {
 
 var handleLeaderBoardLogic = function(req) {
   req.on('data', function(chunk) {
-    console.log("Received body data:");
-    var resonse = JSON.parse(chunk.toString());
-    if (resonse.pull_request == null) {
+    try {
+      var load = JSON.parse(chunk.toString());
+    } catch (e) {
+      console.log(e);
       return;
-    } else {
-      leaderBoardDb['prs'][resonse.pull_request.id] = resonse.pull_request.html_url;
+    }
+    if ((thisPr = load.pull_request) && load.action == 'opened') {
+      leaderBoardDb['prs'][thisPr.html_url] = {
+        title: thisPr.title,
+        openedBy: thisPr.user.login,
+        created: thisPr.created_at,
+        reviewedBy: []
+      };
+      console.log('Yahoo');
+      exec('curl --header "Authorization: key=AIzaSyBBh4ddPa96rQQNxqiq_qQj7sq1JdsNQUQ" --header Content-Type:"application/json" https://android.googleapis.com/gcm/send -d "{\"registration_ids\":[\"e93gZ-qIviM:APA91bGFq1b0PBtYG7YvwFa2sA74IJZOSeHCXg_BZE-iWYL1rfZjGXbcqmWw3aL0eGZyfk7dhY9MnULjncR_ragGnozCeZ71nBl_pCc6cw4BY6xVTd8noeM0kfZW-ckY4vcDrsJdJLre\"]}"');
+    } else if ((thisCom = load.comment)) {
+      var reviewDone = thisCom.body == 'lgtm' && load.action == 'created';
+      if (reviewDone) {
+        var reviewer = thisCom.user.login;
+        var refPull = load.issue.pull_request.html_url;
+        leaderBoardDb.prs[refPull].reviewedBy.push(reviewer);
+        if (!leaderBoardDb.users[reviewer]) {
+          leaderBoardDb.users[reviewer] = {
+            name: reviewer,
+            score: 1
+          };
+        } else {
+          leaderBoardDb.users[reviewer].score = leaderBoardDb.users[reviewer].score + 1;
+        }
+      }
     }
   });
 }
