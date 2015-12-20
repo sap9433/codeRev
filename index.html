@@ -3,10 +3,21 @@
 
 <head>
   <title>Leader Board</title>
+  <link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.css">
+  <style type="text/css">
+  .eachPr {
+    padding: 10px;
+    border-bottom: 1px solid #DEDDDD;
+  }
+  
+  #reviews {
+    height: 658px;
+    border-right: 1px solid #DEDDDD;
+  }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.5.0-rc.0/angular.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="https://js.pusher.com/3.0/pusher.min.js"></script>
   <script>
   var leaderBoard = angular.module('leaderBoardApp', []);
 
@@ -17,31 +28,41 @@
         $scope.$apply();
       });
     })();
+  }).filter('orderObjectBy', function() {
+    return function(items, field, reverse) {
+      var filtered = [];
+      angular.forEach(items, function(item) {
+        filtered.push(item);
+      });
+      filtered.sort(function(a, b) {
+        return (a[field] > b[field] ? 1 : -1);
+      });
+      if (reverse) filtered.reverse();
+      return filtered;
+    };
   });
-
   var socket = io();
-  </script>
-  <script>
-    var pusher = new Pusher('0b4bf9e74a4c99c2f54f', {
-      encrypted: true
-    });
-    var channel = pusher.subscribe('test_channel');
-    channel.bind('my_event', function(data) {
-      alert(data.message);
-    });
   </script>
 </head>
 
 <body ng-controller="appCtrl">
-  Leader Board
-  <div id="reviews">
-    <div ng-repeat="(rowkey, rowVal) in dataBase.prs">
-      <span>{{rowkey}}</span> <span><pre><a href="rowVal">{{rowVal}}</a></span></pre>
+  <div class="row">
+    <div class="seven columns">
+      <div id="reviews">
+        <div ng-repeat="(rowkey, rowVal) in dataBase.prs" class="eachPr">
+          Pull request <a href="{{rowkey}}">{{rowVal.title}}</a> is been submitted by {{rowVal.openedBy}} at {{rowVal.created | date:'medium'}}
+          <div>
+            Reviewed by: <span ng-repeat="name in dataBase.reviewedBy">{{name}} ,</span>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div id="board">
-    <div ng-repeat="(rowkey, rowVal) in dataBase.users">
-      <span>{{rowkey}}</span> <pre><span><a href="rowVal">{{rowVal}}</a></span></pre>
+    <div class="four columns">
+      <div id="board">
+        <div ng-repeat="(rowkey, rowVal) in dataBase.users | orderObjectBy:'score':true">
+          <span>{{rowVal.name}}</span> <span><a href="rowVal">{{rowVal.score}}</a></span>
+        </div>
+      </div>
     </div>
   </div>
 </body>

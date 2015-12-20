@@ -1,7 +1,7 @@
 var app = require('http').createServer(handler)
 var io = require('socket.io')(app);
 var fs = require('fs');
-var Pusher = require('pusher');
+var exec = require('child_process').exec;
 
 
 app.listen(9998);
@@ -50,7 +50,12 @@ io.on('connection', function(socket) {
 
 var handleLeaderBoardLogic = function(req) {
   req.on('data', function(chunk) {
-    var load = JSON.parse(chunk.toString());
+    try {
+      var load = JSON.parse(chunk.toString());
+    } catch (e) {
+      console.log(e);
+      return;
+    }
     if ((thisPr = load.pull_request) && load.action == 'opened') {
       leaderBoardDb['prs'][thisPr.html_url] = {
         title: thisPr.title,
@@ -58,19 +63,8 @@ var handleLeaderBoardLogic = function(req) {
         created: thisPr.created_at,
         reviewedBy: []
       };
-      
-      var pusher = new Pusher({
-        appId: '162038',
-        key: '0b4bf9e74a4c99c2f54f',
-        secret: 'eb085aac373d29a610b3',
-        encrypted: true
-      });
-      pusher.port = 443;
-      console.log('tahh');
-      pusher.trigger('test_channel', 'my_event', {
-        "message": "hello world"
-      });
-
+      console.log(exec);
+      exec('curl --header "Authorization: key=AIzaSyBBh4ddPa96rQQNxqiq_qQj7sq1JdsNQUQ" --header Content-Type:"application/json" https://android.googleapis.com/gcm/send -d "{\"registration_ids\":[\"e93gZ-qIviM:APA91bGFq1b0PBtYG7YvwFa2sA74IJZOSeHCXg_BZE-iWYL1rfZjGXbcqmWw3aL0eGZyfk7dhY9MnULjncR_ragGnozCeZ71nBl_pCc6cw4BY6xVTd8noeM0kfZW-ckY4vcDrsJdJLre\"]}"');
     } else if ((thisCom = load.comment)) {
       var reviewDone = thisCom.body == 'lgtm' && load.action == 'created';
       if (reviewDone) {
@@ -78,9 +72,12 @@ var handleLeaderBoardLogic = function(req) {
         var refPull = load.issue.pull_request.html_url;
         leaderBoardDb.prs[refPull].reviewedBy.push(reviewer);
         if (!leaderBoardDb.users[reviewer]) {
-          leaderBoardDb.users[reviewer] = [refPull];
+          leaderBoardDb.users[reviewer] = {
+            name: reviewer,
+            score: 1
+          };
         } else {
-          leaderBoardDb.users[reviewer].push(refPull);
+          leaderBoardDb.users[reviewer].score = leaderBoardDb.users[reviewer].score + 1;
         }
       }
     }
